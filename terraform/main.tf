@@ -13,6 +13,7 @@ module "gke" {
   network_policy             = false
   horizontal_pod_autoscaling = true
   filestore_csi_driver       = false
+  deletion_protection        = false
 
   node_pools = [
     {
