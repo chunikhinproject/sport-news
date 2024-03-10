@@ -80,3 +80,39 @@ module "gke" {
     ]
   }
 }
+
+module "pubsub" {
+  source = "terraform-google-modules/pubsub/google"
+
+  topic      = var.pubsub_htafc_topic_name
+  project_id = var.gcp_project_id
+}
+
+
+resource "google_app_engine_application" "sport_news" {
+  project       = var.gcp_project_id
+  location_id   = var.gcp_region
+  database_type = "CLOUD_FIRESTORE"
+}
+
+resource "google_project_service" "firestore" {
+  project                    = var.gcp_project_id
+  service                    = "firestore.googleapis.com"
+  disable_dependent_services = true
+  depends_on                 = [
+    google_app_engine_application.sport_news
+  ]
+}
+
+resource "google_redis_instance" "cache" {
+  project            = var.gcp_project_id
+  region             = var.gcp_region
+  name               = var.redis_name
+  tier               = var.redis_tier
+  memory_size_gb     = var.redis_memory_size_gb
+  replica_count      = var.redis_replica_count
+  authorized_network = var.redis_network
+  read_replicas_mode = var.redis_replicas_mode
+  redis_version      = var.redis_version
+  display_name       = var.redis_display_name
+}
